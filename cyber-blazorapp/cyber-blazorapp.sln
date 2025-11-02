@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36109.1 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11123.170
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cyber-blazorapp", "cyber-blazorapp.csproj", "{8C450145-BF9F-404B-AEE2-BE7F212AF191}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyberApka.Server", "CyberApka.Server\CyberApka.Server.csproj", "{B85F2A34-4769-47A0-9149-74B16F9E2359}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyberApka.Shared", "CyberApka.Shared\CyberApka.Shared.csproj", "{20EE482B-DCBA-46EE-8494-F16CD3C1883B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyberApka.Client", "CyberApka.Client\CyberApka.Client.csproj", "{DD762120-182F-3D43-B0C2-E562B6AF2952}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8C450145-BF9F-404B-AEE2-BE7F212AF191}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C450145-BF9F-404B-AEE2-BE7F212AF191}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C450145-BF9F-404B-AEE2-BE7F212AF191}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C450145-BF9F-404B-AEE2-BE7F212AF191}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B85F2A34-4769-47A0-9149-74B16F9E2359}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B85F2A34-4769-47A0-9149-74B16F9E2359}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B85F2A34-4769-47A0-9149-74B16F9E2359}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B85F2A34-4769-47A0-9149-74B16F9E2359}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20EE482B-DCBA-46EE-8494-F16CD3C1883B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20EE482B-DCBA-46EE-8494-F16CD3C1883B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20EE482B-DCBA-46EE-8494-F16CD3C1883B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20EE482B-DCBA-46EE-8494-F16CD3C1883B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD762120-182F-3D43-B0C2-E562B6AF2952}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD762120-182F-3D43-B0C2-E562B6AF2952}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD762120-182F-3D43-B0C2-E562B6AF2952}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD762120-182F-3D43-B0C2-E562B6AF2952}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
