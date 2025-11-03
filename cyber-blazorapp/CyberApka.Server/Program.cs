@@ -1,4 +1,5 @@
 using CyberApka.Server.Data.Database;
+using CyberApka.Server.Features.Auth.Commands;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,18 @@ builder.Services.AddDbContext<CyberDbContext>(options =>
 
 
 builder.Services.AddFastEndpoints();
+builder.Services.AddAuthorization();
+builder.Services.AddControllers();
+builder.Services.AddScoped<CreateUser.Handler>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowWasm",
+        policy => policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
 
 var app = builder.Build();
 
@@ -20,10 +33,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
+app.UseCors("AllowWasm");
 app.UseFastEndpoints();
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
 
 app.Run();

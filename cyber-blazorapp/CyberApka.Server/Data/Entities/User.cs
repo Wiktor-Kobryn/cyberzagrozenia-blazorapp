@@ -4,8 +4,8 @@ public class User : BaseEntity
 {
     public string Username { get; set; }
     public string Email { get; set; }
-    public byte[] Hash { get; set; }
-    public byte[] Salt { get; set; }
+    public byte[] Hash { get; set; } = Array.Empty<byte>();
+    public byte[] Salt { get; set; } = Array.Empty<byte>();
     public int RoleId { get; set; }
     public Role Role { get; set; }
 }

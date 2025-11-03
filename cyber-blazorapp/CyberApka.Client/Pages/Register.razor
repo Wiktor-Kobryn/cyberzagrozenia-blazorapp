@@ -1,0 +1,41 @@
+﻿@page "/register"
+@inject AuthService AuthService
+
+@using CyberApka.Client.Services
+@using CyberApka.Shared.Requests
+@using MudBlazor
+
+<MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
+    <MudText Typo="Typo.h5" Class="mb-4">Rejestracja</MudText>
+
+    <EditForm Model="@_request" OnValidSubmit="RegisterUser">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <MudTextField @bind-Value="_request.Username" Label="Nazwa użytkownika" Required="true" />
+        <MudTextField @bind-Value="_request.Email" Label="Email" Required="true" />
+        <MudTextField @bind-Value="_request.Password" Label="Hasło" InputType="InputType.Password" Required="true" />
+
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">
+            Zarejestruj
+        </MudButton>
+
+        @if (_message is not null)
+        {
+            <MudText Class="mt-3" Color="@(_isError ? Color.Error : Color.Success)">@_message</MudText>
+        }
+    </EditForm>
+</MudPaper>
+
+@code {
+    private RegisterRequest _request = new();
+    private string? _message;
+    private bool _isError;
+
+    private async Task RegisterUser()
+    {
+        var result = await AuthService.RegisterAsync(_request);
+        _isError = !result.Success;
+        _message = result.Success ? "Zarejestrowano pomyślnie!" : result.ErrorMessage;
+    }
+}
