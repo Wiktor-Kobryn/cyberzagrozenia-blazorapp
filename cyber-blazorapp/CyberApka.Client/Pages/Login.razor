@@ -1,9 +1,41 @@
 ﻿@page "/login"
+
 @using MudBlazor
+@using CyberApka.Shared.Requests
 
 <MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
-    Login
+    <MudText Typo="Typo.h5" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" Color="Color.Primary" Class="mb-1" />
+        Sign In
+    </MudText>
+    <EditForm Model="@_request" OnValidSubmit="ValidateUser">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <MudTextField @bind-Value="_request.Email" Label="Email" Required="true" />
+        <MudTextField @bind-Value="_request.Password" Label="Password" InputType="InputType.Password" Required="true" />
+    
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">
+            Login 
+            <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Large" Color="Color.Primary" Class="mb-1" />
+        </MudButton>
+
+        @if (_message is not null)
+        {
+            <MudText Class="mt-3" Color="@(_isError? Color.Error: Color.Success)">@_message</MudText>
+        }
+    </EditForm>
 </MudPaper>
 
 @code {
+    private LoginRequest _request = new();
+    private string? _message;
+    private bool _isError;
+
+    private async Task ValidateUser()
+    {
+        //var result = await AuthService.RegisterAsync(_request);
+        //_isError = !result.Success;
+        //_message = result.Success ? "Zarejestrowano pomyślnie!" : result.ErrorMessage;
+    }
 }
