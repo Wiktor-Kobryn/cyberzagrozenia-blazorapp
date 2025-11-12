@@ -6,7 +6,10 @@
 @using MudBlazor
 
 <MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
-    <MudText Typo="Typo.h5" Class="mb-4">Rejestracja</MudText>
+    <MudText Typo="Typo.h5" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" Color="Color.Primary" Class="mb-1" />
+        Rejestracja
+    </MudText>
 
     <EditForm Model="@_request" OnValidSubmit="RegisterUser">
         <DataAnnotationsValidator />
