@@ -1,5 +1,6 @@
 ﻿@page "/register"
 @inject AuthService AuthService
+@inject ISnackbar Snackbar
 
 @using CyberApka.Client.Services
 @using CyberApka.Shared.Requests
@@ -22,11 +23,6 @@
         <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">
             Zarejestruj
         </MudButton>
-
-        @if (_message is not null)
-        {
-            <MudText Class="mt-3" Color="@(_isError ? Color.Error : Color.Success)">@_message</MudText>
-        }
     </EditForm>
 </MudPaper>
 
@@ -38,7 +34,14 @@
     private async Task RegisterUser()
     {
         var result = await AuthService.RegisterAsync(_request);
-        _isError = !result.Success;
-        _message = result.Success ? "Zarejestrowano pomyślnie!" : result.ErrorMessage;
+
+        if(result.IsSuccess)
+        {
+            Snackbar.Add("Successfully registered", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(result.ErrorMessage ?? "Unknown error", Severity.Error);
+        }
     }
 }

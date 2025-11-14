@@ -17,6 +17,13 @@ public class AuthService
     {
         var response = await _http.PostAsJsonAsync("api/auth/register", request);
         var result = await response.Content.ReadFromJsonAsync<CyberApkaResult<RegisterResponse>>();
-        return result ?? new() { Success = false, ErrorMessage = "Brak odpowiedzi z serwera" };
+        return result ?? new() { IsSuccess = false, ErrorMessage = "Brak odpowiedzi z serwera" };
+    }
+
+    public async Task<CyberApkaResult<LoginResponse>> LoginAsync(LoginRequest request)
+    {
+        var response = await _http.PostAsJsonAsync("api/auth/login", request);
+        var result = await response.Content.ReadFromJsonAsync<CyberApkaResult<LoginResponse>>();
+        return result ?? new() { IsSuccess = false, ErrorMessage = "Brak odpowiedzi z serwera" };
     }
 }

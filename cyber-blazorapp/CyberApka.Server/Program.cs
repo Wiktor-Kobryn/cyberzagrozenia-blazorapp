@@ -14,6 +14,11 @@ builder.Services.AddDbContext<CyberDbContext>(options =>
 builder.Services.AddFastEndpoints();
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly)
+);
+
 builder.Services.AddScoped<CreateUser.Handler>();
 
 builder.Services.AddCors(options =>

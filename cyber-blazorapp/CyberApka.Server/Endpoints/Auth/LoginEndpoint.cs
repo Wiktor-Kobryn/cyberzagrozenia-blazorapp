@@ -7,23 +7,25 @@ using MediatR;
 
 namespace CyberApka.Server.Endpoints.Auth;
 
-public class RegisterUserEndpoint(IMediator mediator) : Endpoint<RegisterRequest, CyberApkaResult<RegisterResponse>>
+public class LoginEndpoint(IMediator mediator) : Endpoint<LoginRequest, CyberApkaResult<LoginResponse>>
 {
     private readonly IMediator _mediator = mediator;
 
     public override void Configure()
     {
-        Post("/api/auth/register");
+        Post("/api/auth/login");
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(RegisterRequest req, CancellationToken ct)
+    public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
-        var result = await _mediator.Send(new CreateUser.Command(req));
+        var result = await _mediator.Send(new Login.Command(req));
 
         if (result.IsSuccess == false)
         {
+            AddError(result.ErrorMessage!);
             await Send.ErrorsAsync();
+            return;
         }
 
         await Send.OkAsync(result);

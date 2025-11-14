@@ -1,7 +1,10 @@
 ﻿@page "/login"
 
+@using CyberApka.Client.Services
 @using MudBlazor
 @using CyberApka.Shared.Requests
+@inject AuthService AuthService
+@inject ISnackbar Snackbar
 
 <MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
     <MudText Typo="Typo.h5" Class="mb-4">
@@ -34,8 +37,18 @@
 
     private async Task ValidateUser()
     {
-        //var result = await AuthService.RegisterAsync(_request);
-        //_isError = !result.Success;
-        //_message = result.Success ? "Zarejestrowano pomyślnie!" : result.ErrorMessage;
+        var result = await AuthService.LoginAsync(_request);
+
+
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Successfully logged", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(result.ErrorMessage ?? "Unknown error", Severity.Error);
+        }
+
     }
+    
 }
