@@ -1,5 +1,6 @@
 using CyberApka.Server.Data.Database;
 using CyberApka.Server.Features.Auth.Commands;
+using CyberApka.Server.Services;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<CyberDbContext>(options =>
 builder.Services.AddFastEndpoints();
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+builder.Services.AddHttpClient<RecaptchaService>();
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly)

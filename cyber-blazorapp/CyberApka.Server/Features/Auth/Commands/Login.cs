@@ -1,5 +1,6 @@
 ﻿using CyberApka.Server.Data.Database;
 using CyberApka.Server.Data.Entities;
+using CyberApka.Server.Services;
 using CyberApka.Shared.Requests;
 using CyberApka.Shared.Responses;
 using CyberApka.Shared.Results;
@@ -21,15 +22,22 @@ public abstract class Login
     private const int MEMORY_SIZE = 1 << 16;
     private const int ITERATIONS = 3;
 
-    public class Handler(CyberDbContext context) : IRequestHandler<Command, CyberApkaResult<LoginResponse>>
+    public class Handler(CyberDbContext context, RecaptchaService recaptcha) : IRequestHandler<Command, CyberApkaResult<LoginResponse>>
     {
         private readonly CyberDbContext _context = context;
+        private readonly RecaptchaService _recaptcha = recaptcha;
 
         public async Task<CyberApkaResult<LoginResponse>> Handle(Command command, CancellationToken ct)
         {
             try
             {
                 var request = command.Request;
+
+                var captchaValid = await _recaptcha.VerifyAsync(request.CaptchaToken!, ct);
+                if (!captchaValid)
+                {
+                    return CyberApkaResult<LoginResponse>.Failure("Captcha validation failed.");
+                }
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Email == request.Email, ct);
@@ -49,7 +57,7 @@ public abstract class Login
 
                 var computedHash = await argon.GetBytesAsync(HASH_BYTES);
 
-                if(CryptographicOperations.FixedTimeEquals(computedHash, user.Hash) == false)
+                if (CryptographicOperations.FixedTimeEquals(computedHash, user.Hash) == false)
                 {
                     return CyberApkaResult<LoginResponse>.Failure("Incorrect email or password");
                 }
@@ -61,7 +69,7 @@ public abstract class Login
                     ExpiresAt = DateTime.UtcNow.AddDays(1)
                 };
 
-               return CyberApkaResult<LoginResponse>.Success(response);
+                return CyberApkaResult<LoginResponse>.Success(response);
             }
             catch (Exception ex)
             {
