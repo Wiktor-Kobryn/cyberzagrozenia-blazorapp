@@ -5,6 +5,9 @@
 @using CyberApka.Client.Services
 @using CyberApka.Shared.Requests
 @using MudBlazor
+@inject IJSRuntime JS
+
+<head><script src="https://www.google.com/recaptcha/api.js" async defer></script></head>
 
 <MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
     <MudText Typo="Typo.h5" Class="mb-4">
@@ -16,12 +19,16 @@
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <MudTextField @bind-Value="_request.Username" Label="Nazwa użytkownika" Required="true" />
+        <MudTextField @bind-Value="_request.Username" Label="Username" Required="true" />
         <MudTextField @bind-Value="_request.Email" Label="Email" Required="true" />
-        <MudTextField @bind-Value="_request.Password" Label="Hasło" InputType="InputType.Password" Required="true" />
+        <MudTextField @bind-Value="_request.Password" Label="Password" InputType="InputType.Password" Required="true" />
+        <MudContainer Style="margin-top: 20px;">
+            <div id="loginRecaptcha" class="g-recaptcha" data-sitekey="6Lcwpg0sAAAAABpF5jSbZZGWJO4KMo0HDMSBMcuf"></div>
+        </MudContainer>
 
         <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">
-            Zarejestruj
+            Register
+            <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Large" Color="Color.Primary" Class="mb-1" />
         </MudButton>
     </EditForm>
 </MudPaper>
@@ -33,6 +40,13 @@
 
     private async Task RegisterUser()
     {
+        _request.CaptchaToken = await JS.InvokeAsync<string>("grecaptcha.getResponse", 0);
+        if (string.IsNullOrEmpty(_request.CaptchaToken))
+        {
+            Snackbar.Add("Please complete the captcha", Severity.Error);
+            return;
+        }
+
         var result = await AuthService.RegisterAsync(_request);
 
         if(result.IsSuccess)

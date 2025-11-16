@@ -24,6 +24,7 @@ public class RegisterUserEndpoint(IMediator mediator) : Endpoint<RegisterRequest
         if (result.IsSuccess == false)
         {
             await Send.ErrorsAsync();
+            return;
         }
 
         await Send.OkAsync(result);

@@ -1,5 +1,6 @@
 ﻿using CyberApka.Server.Data.Database;
 using CyberApka.Server.Data.Entities;
+using CyberApka.Server.Services;
 using CyberApka.Shared.Requests;
 using CyberApka.Shared.Responses;
 using CyberApka.Shared.Results;
@@ -21,9 +22,10 @@ public abstract class CreateUser
     private const int MEMORY_SIZE = 1 << 16;
     private const int ITERATIONS = 3;
 
-    public class Handler(CyberDbContext context) : IRequestHandler<Command, CyberApkaResult<RegisterResponse>>
+    public class Handler(CyberDbContext context, RecaptchaService recaptcha) : IRequestHandler<Command, CyberApkaResult<RegisterResponse>>
     {
         private readonly CyberDbContext _context = context;
+        private readonly RecaptchaService _recaptcha = recaptcha;
 
         public async Task<CyberApkaResult<RegisterResponse>> Handle(Command command, CancellationToken ct)
         {
@@ -31,9 +33,15 @@ public abstract class CreateUser
             {
                 var request = command.Request;
 
+                var captchaValid = await _recaptcha.VerifyAsync(request.CaptchaToken!, ct);
+                if (!captchaValid)
+                {
+                    return CyberApkaResult<RegisterResponse>.Failure("Captcha validation failed.");
+                }
+
                 if (await _context.Users.AnyAsync(u => u.Email == request.Email, ct))
                 {
-                    return CyberApkaResult<RegisterResponse>.Failure("Email zajęty");
+                    return CyberApkaResult<RegisterResponse>.Failure("Email address already in use.");
                 }
 
                 var salt = RandomNumberGenerator.GetBytes(SALT_BYTES);              //tworzymy losowo salt 16 bajtów

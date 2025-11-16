@@ -1,4 +1,4 @@
-using CyberApka.Server.Data.Database;
+﻿using CyberApka.Server.Data.Database;
 using CyberApka.Server.Features.Auth.Commands;
 using CyberApka.Server.Services;
 using FastEndpoints;
