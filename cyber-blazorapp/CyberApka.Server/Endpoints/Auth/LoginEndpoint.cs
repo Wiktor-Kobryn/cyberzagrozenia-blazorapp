@@ -23,8 +23,10 @@ public class LoginEndpoint(IMediator mediator) : Endpoint<LoginRequest, CyberApk
 
         if (result.IsSuccess == false)
         {
-            AddError(result.ErrorMessage!);
-            await Send.ErrorsAsync();
+            await HttpContext.Response.SendAsync(
+                CyberApkaResult<LoginResponse>.Failure(result.ErrorMessage!),
+                400
+            );
             return;
         }
 
