@@ -1,0 +1,35 @@
+﻿@page "/dashboard"
+@using MudBlazor
+@inject NavigationManager NavigationManager
+
+<MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
+    <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center w-100">
+
+        <div class="d-flex justify-end w-100 mb-2">
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@Logout">
+                Sign Out
+            </MudButton>
+        </div>
+
+        <div class="d-flex flex-column justify-center align-center w-100">
+            <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Primary" Style="font-size:200px;" />
+            <MudText Typo="Typo.h5" Class="mb-3">
+                SIGNED IN
+                <MudIcon Icon="@Icons.Material.Filled.DoneOutline" Class="mb-2"></MudIcon>
+            </MudText>
+            <MudText>Username</MudText>
+        </div>
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" onclick="@RedirectLogs">Incident Logs</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" onclick="@RedirectUsers">Manage Users</MudButton>
+    </MudContainer>
+</MudPaper>
+
+
+
+@code {
+    private void Logout() { NavigationManager.NavigateTo("/"); }            // logika wylogowywania - brak
+
+    private void RedirectLogs() { NavigationManager.NavigateTo("/logs"); }  // warunek wyświetlania - rola admin
+    private void RedirectUsers() { NavigationManager.NavigateTo("/users"); }
+}

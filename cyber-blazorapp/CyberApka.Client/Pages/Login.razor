@@ -6,6 +6,7 @@
 @inject AuthService AuthService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
+@inject NavigationManager NavigationManager
 
 <head><script src="https://www.google.com/recaptcha/api.js" async defer></script></head>
 <MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
@@ -54,6 +55,7 @@
         if (result.IsSuccess)
         {
             Snackbar.Add("Successfully logged", Severity.Success);
+            NavigationManager.NavigateTo("/dashboard");
         }
         else
         {
