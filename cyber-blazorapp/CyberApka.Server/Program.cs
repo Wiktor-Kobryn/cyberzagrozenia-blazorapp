@@ -16,6 +16,7 @@ builder.Services.AddFastEndpoints();
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddHttpClient<RecaptchaService>();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly)
