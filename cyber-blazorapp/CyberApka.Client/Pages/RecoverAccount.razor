@@ -1,9 +1,9 @@
-﻿@page "/login"
+﻿@page "/recoverAccount"
 
 @using CyberApka.Client.Services
 @using MudBlazor
 @using CyberApka.Shared.Requests
-@inject AuthService AuthService
+@inject RecoveryService RecoveryService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
 @inject NavigationManager NavigationManager
@@ -12,51 +12,60 @@
 
 <MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
     <div class="d-flex flex-column align-end w-100 mb-2">
-        <MudText class="mb-1">Don't have an account?</MudText>
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@RedirectRegister">Sign Up</MudButton>
+        <MudStack Spacing="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" onclick="@RedirectLogin">Sign In</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" FullWidth="true" onclick="@RedirectRegister">Sign Up</MudButton>
+        </MudStack>
     </div>
 
     <div>
         <MudText Typo="Typo.h5" Class="mb-4">
-            <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" Color="Color.Primary" Class="mb-1" /> Sign In
+            <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" Color="Color.Primary" Class="mb-1" />
+            Recover Account
         </MudText>
 
-        <EditForm Model="@_request" OnValidSubmit="ValidateUser">
+        <EditForm Model="@_request" OnValidSubmit="SendRecoveryEmail">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
             <MudTextField @bind-Value="_request.Email" Label="Email" Required="true" />
-            <MudTextField @bind-Value="_request.Password" Label="Password" InputType="InputType.Password" Required="true" />
-
+            
             <MudContainer Style="margin-top: 20px;">
                 <div id="loginRecaptcha" class="g-recaptcha" data-sitekey="6Lcwpg0sAAAAABpF5jSbZZGWJO4KMo0HDMSBMcuf"></div>
             </MudContainer>
 
-            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">Login <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Large" Color="Color.Primary" Class="mb-1" /></MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">
+                Send Code
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Large" Color="Color.Primary" Class="mb-1" />
+            </MudButton>
 
             @if (_message is not null)
             {
                 <MudText Class="mt-3" Color="@(_isError? Color.Error: Color.Success)">@_message</MudText>
             }
         </EditForm>
-    </div>
 
-    <div class="d-flex flex-column align-start w-100 mb-2 mt-4">
-        <MudText class="mb-1">Forgot your password?</MudText>
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@RedirectRecover">Recover account</MudButton>
+        <div class="d-flex flex-column align-center">
+            <MudText Typo="Typo.h6" Class="mb-3">Recovery Code:</MudText>
+
+            <MudTextField @bind-Value="_recoveryCode"
+                          MaxLength="6"
+                          Style="letter-spacing: .6rem; font-size: 24px; text-align: center; padding-left: 12px;" />
+        </div>
     </div>
 </MudPaper>
 
 
 @code {
-    private LoginRequest _request = new();
+    private RecoveryEmailRequest _request = new();
     private string? _message;
     private bool _isError;
+    private string _recoveryCode;
 
     private void RedirectRegister() { NavigationManager.NavigateTo("/register"); }
-    private void RedirectRecover() { NavigationManager.NavigateTo("/recoverAccount"); }
+    private void RedirectLogin() { NavigationManager.NavigateTo("/login"); } 
 
-    private async Task ValidateUser()
+    private async Task SendRecoveryEmail()
     {
         _request.CaptchaToken = await JS.InvokeAsync<string>("grecaptcha.getResponse", 0);
         if (string.IsNullOrEmpty(_request.CaptchaToken))
@@ -65,18 +74,15 @@
             return;
         }
 
-        var result = await AuthService.LoginAsync(_request);
+        var result = await RecoveryService.SendRecoveryEmailAsync(_request);
 
         if (result.IsSuccess)
         {
-            Snackbar.Add("Successfully logged", Severity.Success);
-            NavigationManager.NavigateTo("/dashboard");
+            Snackbar.Add("Recovery code sent via email", Severity.Success);
         }
         else
         {
             Snackbar.Add(result.ErrorMessage ?? "Unknown error", Severity.Error);
         }
-
     }
-    
 }
