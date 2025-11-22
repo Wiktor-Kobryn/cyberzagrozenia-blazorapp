@@ -16,16 +16,16 @@ public abstract class Login
 {
     public record Command(LoginRequest Request) : IRequest<CyberApkaResult<LoginResponse>>;
 
-    private const int SALT_BYTES = 16;
     private const int HASH_BYTES = 32;
     private const int DEGREE_OF_PARALLELISM = 2;
     private const int MEMORY_SIZE = 1 << 16;
     private const int ITERATIONS = 3;
 
-    public class Handler(CyberDbContext context, RecaptchaService recaptcha) : IRequestHandler<Command, CyberApkaResult<LoginResponse>>
+    public class Handler(CyberDbContext context, RecaptchaService recaptcha, TokenService tokenService) : IRequestHandler<Command, CyberApkaResult<LoginResponse>>
     {
         private readonly CyberDbContext _context = context;
         private readonly RecaptchaService _recaptcha = recaptcha;
+        private readonly TokenService _tokenService = tokenService;
 
         public async Task<CyberApkaResult<LoginResponse>> Handle(Command command, CancellationToken ct)
         {
@@ -40,6 +40,8 @@ public abstract class Login
                 }
 
                 var user = await _context.Users
+                    .AsNoTracking()
+                    .Include(u => u.Role)
                     .FirstOrDefaultAsync(u => u.Email == request.Email, ct);
 
                 if (user == null)
@@ -62,11 +64,19 @@ public abstract class Login
                     return CyberApkaResult<LoginResponse>.Failure("Incorrect email or password");
                 }
 
+                var accessToken = _tokenService.GenerateAccessToken(user);
+                var refreshToken = _tokenService.GenerateRefreshToken();
+
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1);
+
+                await _context.SaveChangesAsync(ct);
+
                 var response = new LoginResponse()
                 {
-                    RefreshToken = "aaa",
-                    AccessToken = "bbb",
-                    ExpiresAt = DateTime.UtcNow.AddDays(1)
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(15)
                 };
 
                 return CyberApkaResult<LoginResponse>.Success(response);

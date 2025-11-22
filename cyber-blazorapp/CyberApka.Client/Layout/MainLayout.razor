@@ -1,5 +1,10 @@
 ﻿@using MudBlazor
+@using CyberApka.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization
 @inherits LayoutComponentBase
+
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -11,6 +16,32 @@
         <MudAppBar Color="Color.Primary" Elevation="2">
             <MudText Typo="Typo.h6">CyberApka</MudText>
             <MudSpacer />
+
+            <AuthorizeView>
+                <Authorized>
+                    <MudText Class="mr-4">Witaj, <b>@context.User.Identity?.Name</b></MudText>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Secondary" 
+                               OnClick="LogoutUser"
+                               StartIcon="@Icons.Material.Filled.Logout">
+                        Wyloguj
+                    </MudButton>
+                </Authorized>
+                <NotAuthorized>
+                    <MudButton Variant="Variant.Text" 
+                               Color="Color.Inherit" 
+                               Href="/login">
+                        Logowanie
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Inherit" 
+                               Class="ml-2"
+                               Href="/register">
+                        Rejestracja
+                    </MudButton>
+                </NotAuthorized>
+            </AuthorizeView>
+
         </MudAppBar>
 
         <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
@@ -18,3 +49,13 @@
         </MudContainer>
     </MudMainContent>
 </MudLayout>
+
+
+@code {
+    private async Task LogoutUser()
+    {
+        await AuthService.LogoutAsync();
+
+        NavigationManager.NavigateTo("/login");
+    }
+}

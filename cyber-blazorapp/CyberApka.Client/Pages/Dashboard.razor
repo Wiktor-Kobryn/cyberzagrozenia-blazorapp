@@ -1,6 +1,9 @@
 ﻿@page "/dashboard"
+@using Microsoft.AspNetCore.Authorization
 @using MudBlazor
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize]
 
 <MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
     <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center w-100">
