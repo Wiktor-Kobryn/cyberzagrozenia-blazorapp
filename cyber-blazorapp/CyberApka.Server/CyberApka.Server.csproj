@@ -25,7 +25,6 @@
   <ItemGroup>
     <Folder Include="Data\Database\Migrations\" />
     <Folder Include="Endpoints\Logs\" />
-    <Folder Include="Endpoints\Roles\" />
     <Folder Include="Endpoints\Users\" />
     <Folder Include="Features\Auth\Queries\" />
     <Folder Include="Features\Logs\Commands\" />

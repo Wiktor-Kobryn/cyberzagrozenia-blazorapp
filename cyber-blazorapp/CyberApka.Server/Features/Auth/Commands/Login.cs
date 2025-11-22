@@ -42,6 +42,7 @@ public abstract class Login
                 var user = await _context.Users
                     .AsNoTracking()
                     .Include(u => u.Role)
+                        .ThenInclude(u => u.Permissions)
                     .FirstOrDefaultAsync(u => u.Email == request.Email, ct);
 
                 if (user == null)

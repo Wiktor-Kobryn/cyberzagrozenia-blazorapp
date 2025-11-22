@@ -25,6 +25,15 @@ public class TokenService(IConfiguration config)
             new(ClaimTypes.Role, user.Role.Name)
         };
 
+        var permissions = user.Role.Permissions
+        .Select(p => p.Name)
+        .Distinct();
+
+        foreach (var permission in permissions)
+        {
+            claims.Add(new Claim("permission", permission));
+        }
+
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
