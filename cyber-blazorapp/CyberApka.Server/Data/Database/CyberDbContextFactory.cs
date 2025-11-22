@@ -10,7 +10,7 @@ public class CyberDbContextFactory : IDesignTimeDbContextFactory<CyberDbContext>
         var optionsBuilder = new DbContextOptionsBuilder<CyberDbContext>();
 
         optionsBuilder.UseSqlServer(
-            "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CyberApkaDB;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False;Command Timeout=30");
+            "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CyberApkaDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
 
         return new CyberDbContext(optionsBuilder.Options);
     }
