@@ -1,4 +1,5 @@
-﻿using CyberApka.Server.Data.Database;
+﻿using Azure.Core;
+using CyberApka.Server.Data.Database;
 using CyberApka.Server.Data.Entities;
 using CyberApka.Server.Services;
 using CyberApka.Shared.Requests;
@@ -21,11 +22,12 @@ public abstract class Login
     private const int MEMORY_SIZE = 1 << 16;
     private const int ITERATIONS = 3;
 
-    public class Handler(CyberDbContext context, RecaptchaService recaptcha, TokenService tokenService) : IRequestHandler<Command, CyberApkaResult<LoginResponse>>
+    public class Handler(CyberDbContext context, RecaptchaService recaptcha, TokenService tokenService, LogService logService) : IRequestHandler<Command, CyberApkaResult<LoginResponse>>
     {
         private readonly CyberDbContext _context = context;
         private readonly RecaptchaService _recaptcha = recaptcha;
         private readonly TokenService _tokenService = tokenService;
+        private readonly LogService _logService = logService;
 
         public async Task<CyberApkaResult<LoginResponse>> Handle(Command command, CancellationToken ct)
         {
@@ -36,6 +38,7 @@ public abstract class Login
                 var captchaValid = await _recaptcha.VerifyAsync(request.CaptchaToken!, ct);
                 if (!captchaValid)
                 {
+                    await _logService.AddLogAsync("Login - Captcha validation failed", request.Email ,null);
                     return CyberApkaResult<LoginResponse>.Failure("Captcha validation failed.");
                 }
 
@@ -47,6 +50,7 @@ public abstract class Login
 
                 if (user == null)
                 {
+                    await _logService.AddLogAsync("Login - Incorrect email or password", request.Email, null);
                     return CyberApkaResult<LoginResponse>.Failure("Incorrect email or password.");
                 }
 
@@ -62,6 +66,7 @@ public abstract class Login
 
                 if (CryptographicOperations.FixedTimeEquals(computedHash, user.Hash) == false)
                 {
+                    await _logService.AddLogAsync("Login - Incorrect email or password", request.Email, null);
                     return CyberApkaResult<LoginResponse>.Failure("Incorrect email or password");
                 }
 
@@ -80,10 +85,13 @@ public abstract class Login
                     ExpiresAt = DateTime.UtcNow.AddMinutes(15)
                 };
 
+                await _logService.AddLogAsync("Login success", user.Email, user.Id);
+
                 return CyberApkaResult<LoginResponse>.Success(response);
             }
             catch (Exception ex)
             {
+                await _logService.AddLogAsync("Login - Error", command.Request.Email, null);
                 return CyberApkaResult<LoginResponse>.Failure(ex.Message);
             }
         }

@@ -42,6 +42,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddHttpClient<RecaptchaService>();
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<LogService>();
 builder.Services.AddMemoryCache();
 
 builder.Services.AddMediatR(cfg =>
