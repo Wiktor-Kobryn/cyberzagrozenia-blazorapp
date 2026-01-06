@@ -1,15 +1,11 @@
 ﻿@page "/register"
 @inject AuthService AuthService
 @inject ISnackbar Snackbar
-
 @using CyberApka.Client.Services
 @using CyberApka.Shared.Requests
 @using MudBlazor
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
-@inject NavigationManager NavigationManager
-
-<head><script src="https://www.google.com/recaptcha/api.js" async defer></script></head>
 
 <MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
     <div class="d-flex flex-column align-end w-100 mb-2">
@@ -31,8 +27,9 @@
             <MudTextField @bind-Value="_request.Email" Label="Email" Required="true" />
             <MudTextField @bind-Value="_request.Password" Label="Password" InputType="InputType.Password" Required="true" />
             <MudTextField @bind-Value="repeatedPassword" Label="Repeat password" InputType="InputType.Password" Required="true" />
+
             <MudContainer Style="margin-top: 20px;">
-                <div id="loginRecaptcha" class="g-recaptcha" data-sitekey="6Lcwpg0sAAAAABpF5jSbZZGWJO4KMo0HDMSBMcuf"></div>
+                <div id="register-recaptcha-container" @key="@("recaptcha-div")"></div>
             </MudContainer>
 
             <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">
@@ -45,11 +42,26 @@
 
 @code {
     private RegisterRequest _request = new();
-    private string? _message;
-    private bool _isError;
     private string repeatedPassword = "";
+    private const string SiteKey = "6Lcwpg0sAAAAABpF5jSbZZGWJO4KMo0HDMSBMcuf";
 
     private void RedirectLogin() { NavigationManager.NavigateTo("/login"); }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(500);
+            try
+            {
+                await JS.InvokeVoidAsync("renderRecaptcha", "register-recaptcha-container", SiteKey);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Recaptcha render error: " + ex.Message);
+            }
+        }
+    }
 
     private bool CheckPasswordIntegrity()
     {
@@ -60,16 +72,21 @@
             repeatedPassword = "";
             return false;
         }
-        else
-            return true;
+        return true;
     }
 
     private async Task RegisterUser()
     {
-        if (CheckPasswordIntegrity() == false)
-            return;
+        if (!CheckPasswordIntegrity()) return;
+        try
+        {
+            _request.CaptchaToken = await JS.InvokeAsync<string>("getRecaptchaResponse");
+        }
+        catch
+        {
+            _request.CaptchaToken = await JS.InvokeAsync<string>("grecaptcha.getResponse");
+        }
 
-        _request.CaptchaToken = await JS.InvokeAsync<string>("grecaptcha.getResponse", 0);
         if (string.IsNullOrEmpty(_request.CaptchaToken))
         {
             Snackbar.Add("Please complete the captcha", Severity.Error);
@@ -78,7 +95,7 @@
 
         var result = await AuthService.RegisterAsync(_request);
 
-        if(result.IsSuccess)
+        if (result.IsSuccess)
         {
             Snackbar.Add("Successfully registered", Severity.Success);
             NavigationManager.NavigateTo("/login");

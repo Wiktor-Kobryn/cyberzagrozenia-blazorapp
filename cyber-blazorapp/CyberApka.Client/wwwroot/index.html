@@ -29,6 +29,26 @@
     </div>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 
 </html>
+
+<script>
+
+    function renderRecaptcha(containerId, siteKey) {
+        if (window.grecaptcha && window.grecaptcha.render) {
+            const container = document.getElementById(containerId);
+            if (container && container.innerHTML === "") {
+                window.grecaptcha.render(containerId, {
+                    'sitekey': siteKey
+                });
+            }
+        }
+    }
+
+
+    function getRecaptchaResponse() {
+        return grecaptcha.getResponse();
+    }
+</script>

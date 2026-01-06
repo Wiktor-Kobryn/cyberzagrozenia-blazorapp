@@ -1,0 +1,31 @@
+﻿@using CyberApka.Shared.Requests
+@using MudBlazor
+@using CyberApka.Shared.DTOs
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Model.Username" Label="Username" />
+        <MudTextField @bind-Value="Model.Email" Label="Email" />
+
+        <MudSelect T="int" Label="Role" @bind-Value="Model.RoleId" AnchorOrigin="Origin.BottomCenter">
+            @foreach (var role in AvailableRoles)
+            {
+                <MudSelectItem Value="@role.Id">@role.Name</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public UpdateUserRequest Model { get; set; } = new();
+    [Parameter] public List<RoleDto> AvailableRoles { get; set; } = new();
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(Model));
+    void Cancel() => MudDialog.Cancel();
+}

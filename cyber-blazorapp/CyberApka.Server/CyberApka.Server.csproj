@@ -24,12 +24,8 @@
 
   <ItemGroup>
     <Folder Include="Data\Database\Migrations\" />
-    <Folder Include="Endpoints\Users\" />
     <Folder Include="Features\Auth\Queries\" />
-    <Folder Include="Features\Logs\Queries\" />
     <Folder Include="Features\Roles\Queries\" />
-    <Folder Include="Features\Users\Commands\" />
-    <Folder Include="Features\Users\Queries\" />
   </ItemGroup>
 
   <ItemGroup>

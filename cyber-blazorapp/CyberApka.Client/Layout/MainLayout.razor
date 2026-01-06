@@ -7,8 +7,13 @@
 @inject NavigationManager NavigationManager
 
 <MudThemeProvider />
-<MudDialogProvider />
+<MudDialogProvider FullWidth="true"
+                   MaxWidth="MaxWidth.Small"
+                   CloseButton="true"
+                   Position="DialogPosition.Center"
+                   CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
+<MudPopoverProvider />
 
 <MudLayout>
     <NavMenu />

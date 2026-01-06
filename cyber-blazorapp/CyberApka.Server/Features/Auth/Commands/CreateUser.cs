@@ -22,10 +22,11 @@ public abstract class CreateUser
     private const int MEMORY_SIZE = 1 << 16;
     private const int ITERATIONS = 3;
 
-    public class Handler(CyberDbContext context, RecaptchaService recaptcha) : IRequestHandler<Command, CyberApkaResult<RegisterResponse>>
+    public class Handler(CyberDbContext context, RecaptchaService recaptcha, LogService logService) : IRequestHandler<Command, CyberApkaResult<RegisterResponse>>
     {
         private readonly CyberDbContext _context = context;
         private readonly RecaptchaService _recaptcha = recaptcha;
+        private readonly LogService _logService = logService;
 
         public async Task<CyberApkaResult<RegisterResponse>> Handle(Command command, CancellationToken ct)
         {
@@ -36,11 +37,13 @@ public abstract class CreateUser
                 var captchaValid = await _recaptcha.VerifyAsync(request.CaptchaToken!, ct);
                 if (!captchaValid)
                 {
+                    await _logService.AddLogAsync("Register - Captcha validation failed", request.Email, null);
                     return CyberApkaResult<RegisterResponse>.Failure("Captcha validation failed.");
                 }
 
                 if (await _context.Users.AnyAsync(u => u.Email == request.Email, ct))
                 {
+                    await _logService.AddLogAsync("Register - Email already in use", request.Email, null);
                     return CyberApkaResult<RegisterResponse>.Failure("Email address already in use.");
                 }
 
@@ -67,12 +70,15 @@ public abstract class CreateUser
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync(ct);
 
+                await _logService.AddLogAsync("Register success", user.Email, user.Id);
+
                 var response = new RegisterResponse { UserId = user.Id };
 
                 return CyberApkaResult<RegisterResponse>.Success(response);
             }
             catch (Exception ex)
             {
+                await _logService.AddLogAsync("Register - Error", $"{command.Request.Email} | {ex.Message}", null);
                 return CyberApkaResult<RegisterResponse>.Failure(ex.Message);
             }
         }

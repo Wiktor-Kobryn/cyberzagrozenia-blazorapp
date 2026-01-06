@@ -1,0 +1,120 @@
+﻿@page "/logs"
+@using CyberApka.Shared.Results
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@attribute [Authorize(Roles = "Admin")]
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+
+    <div class="d-flex align-center justify-space-between mb-4">
+        <MudText Typo="Typo.h4">Incident Logs</MudText>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Refresh"
+                   Color="Color.Primary"
+                   OnClick="LoadLogs">
+            Refresh
+        </MudButton>
+    </div>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+    }
+    else
+    {
+        <MudTable Items="@_logs" Hover="true" Striped="true" Dense="true" Elevation="10" Filter="new Func<LogDto, bool>(FilterFunc)">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">System Activity</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="_searchString" Placeholder="Search logs..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh><MudTableSortLabel SortBy="new Func<LogDto, object>(x => x.TimeStamp)">Time (UTC)</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<LogDto, object>(x => x.Action)">Action</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<LogDto, object>(x => x.Username!)">User</MudTableSortLabel></MudTh>
+                <MudTh>Details</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Time">@context.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+                <MudTd DataLabel="Action">
+                    @if (context.Action.Contains("Error") || context.Action.Contains("failed"))
+                    {
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small">@context.Action</MudChip>
+                    }
+                    else if (context.Action.Contains("success") || context.Action.Contains("Success"))
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">@context.Action</MudChip>
+                    }
+                    else
+                    {
+                        <MudText>@context.Action</MudText>
+                    }
+                </MudTd>
+                <MudTd DataLabel="User">@context.Username</MudTd>
+                <MudTd DataLabel="Details">
+                    <MudText Typo="Typo.body2" Style="color: gray;">@context.Details</MudText>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    public record LogDto(int Id, string Action, string? Details, string? Username, DateTime TimeStamp);
+
+    private List<LogDto> _logs = new();
+    private bool _isLoading = true;
+    private string _searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLogs();
+    }
+
+    private async Task LoadLogs()
+    {
+        _isLoading = true;
+        try
+        {
+
+            var result = await Http.GetFromJsonAsync<CyberApkaResult<List<LogDto>>>("api/admin/logs");
+
+            if (result != null && result.IsSuccess)
+            {
+                _logs = result.Data ?? new();
+            }
+            else
+            {
+                Snackbar.Add(result?.ErrorMessage ?? "Unknown API error", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load logs: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private bool FilterFunc(LogDto element) => FilterFunc1(element, _searchString);
+
+    private bool FilterFunc1(LogDto element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Action.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Username != null && element.Username.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Details != null && element.Details.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+}

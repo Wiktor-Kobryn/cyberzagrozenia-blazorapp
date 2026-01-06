@@ -1,0 +1,159 @@
+﻿@page "/users"
+@using CyberApka.Shared.DTOs
+@using CyberApka.Shared.Requests
+@using CyberApka.Shared.Responses
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@using CyberApka.Shared.Results
+@attribute [Authorize(Roles = "Admin")]
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-4">User Management</MudText>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+    }
+    else
+    {
+        <MudTable Items="@_users" Hover="true" Striped="true" Elevation="10" Filter="new Func<UserDto, bool>(FilterFunc)">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Registered Users</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>ID</MudTh>
+                <MudTh>Username</MudTh>
+                <MudTh>Email</MudTh>
+                <MudTh>Role</MudTh>
+                <MudTh Style="text-align:right">Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ID">@context.Id</MudTd>
+                <MudTd DataLabel="Username">@context.Username</MudTd>
+                <MudTd DataLabel="Email">@context.Email</MudTd>
+                <MudTd DataLabel="Role">
+                    <MudChip T="string" Size="Size.Small" Color="@(context.RoleName == "Admin" ? Color.Error : Color.Primary)">
+                        @context.RoleName
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Actions" Style="text-align:right">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Info" OnClick="@(() => EditUser(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteUser(context))" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    private List<UserDto> _users = new();
+    private List<RoleDto> _roles = new();
+    private bool _isLoading = true;
+    private string _searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _isLoading = true;
+        try
+        {
+            var response = await Http.GetFromJsonAsync<CyberApkaResult<GetUsersResponse>>("api/admin/users");
+
+            if (response != null && response.IsSuccess && response.Data != null)
+            {
+                _users = response.Data.Users ?? new();
+                _roles = response.Data.Roles ?? new();
+            }
+            else
+            {
+                Snackbar.Add(response?.ErrorMessage ?? "Failed to load data", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Network error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task EditUser(UserDto user)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Model"] = new UpdateUserRequest
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                RoleId = user.RoleId
+            },
+            ["AvailableRoles"] = _roles
+        };
+
+        var dialog = await DialogService.ShowAsync<UserDialog>("Edit User", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            if (result.Data is UpdateUserRequest updateCommand)
+            {
+                var response = await Http.PutAsJsonAsync("api/admin/users", updateCommand);
+                var apiResult = await response.Content.ReadFromJsonAsync<CyberApkaResult<string>>();
+
+                if (apiResult != null && apiResult.IsSuccess)
+                {
+                    Snackbar.Add("User updated!", Severity.Success);
+                    await LoadData();
+                }
+                else
+                {
+                    Snackbar.Add(apiResult?.ErrorMessage ?? "Update failed", Severity.Error);
+                }
+            }
+        }
+    }
+
+    private async Task DeleteUser(UserDto user)
+    {
+        bool? confirm = await DialogService.ShowMessageBox(
+           "Warning",
+           $"Are you sure you want to delete {user.Username}?",
+           yesText: "Delete!", cancelText: "Cancel");
+
+        if (confirm == true)
+        {
+            var response = await Http.DeleteAsync($"api/admin/users/{user.Id}");
+            var result = await response.Content.ReadFromJsonAsync<CyberApkaResult<string>>();
+            if (result != null && result.IsSuccess)
+            {
+                _users.Remove(user);
+                StateHasChanged();
+            }
+        }
+    }
+
+    private bool FilterFunc(UserDto element) => FilterFunc1(element, _searchString);
+    private bool FilterFunc1(UserDto element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (element.Username?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true) return true;
+        if (element.Email?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true) return true;
+        return false;
+    }
+}
