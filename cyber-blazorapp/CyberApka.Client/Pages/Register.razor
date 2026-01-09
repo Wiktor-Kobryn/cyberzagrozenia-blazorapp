@@ -24,7 +24,7 @@
             <ValidationSummary />
 
             <MudTextField @bind-Value="_request.Username" Label="Username" Required="true" />
-            <MudTextField @bind-Value="_request.Email" Label="Email" Required="true" />
+            <MudTextField @bind-Value="_request.Email" Label="Email" Required="true" InputType="InputType.Email"/>
             <MudTextField @bind-Value="_request.Password" Label="Password" InputType="InputType.Password" Required="true" />
             <MudTextField @bind-Value="repeatedPassword" Label="Repeat password" InputType="InputType.Password" Required="true" />
 

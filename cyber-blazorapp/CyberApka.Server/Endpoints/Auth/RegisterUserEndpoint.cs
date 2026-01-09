@@ -23,7 +23,10 @@ public class RegisterUserEndpoint(IMediator mediator) : Endpoint<RegisterRequest
 
         if (result.IsSuccess == false)
         {
-            await Send.ErrorsAsync();
+            await HttpContext.Response.SendAsync(
+                CyberApkaResult<LoginResponse>.Failure(result.ErrorMessage!),
+                400
+            );
             return;
         }
 
