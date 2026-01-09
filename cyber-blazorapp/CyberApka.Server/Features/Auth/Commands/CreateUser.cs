@@ -38,13 +38,13 @@ public abstract class CreateUser
                 if (!captchaValid)
                 {
                     await _logService.AddLogAsync("Register - Captcha validation failed", request.Email, null);
-                    return CyberApkaResult<RegisterResponse>.Failure("Captcha validation failed.");
+                    return CyberApkaResult<RegisterResponse>.Failure("Błąd walidacji captcha.");
                 }
 
                 if (await _context.Users.AnyAsync(u => u.Email == request.Email, ct))
                 {
                     await _logService.AddLogAsync("Register - Email already in use", request.Email, null);
-                    return CyberApkaResult<RegisterResponse>.Failure("Email address already in use.");
+                    return CyberApkaResult<RegisterResponse>.Failure("Istnieje konto o tym adresie email.");
                 }
 
                 var salt = RandomNumberGenerator.GetBytes(SALT_BYTES);              //tworzymy losowo salt 16 bajtów
@@ -64,7 +64,7 @@ public abstract class CreateUser
                     Email = request.Email,
                     Salt = salt,
                     Hash = hash,
-                    RoleId = 3
+                    RoleId = 2
                 };
 
                 _context.Users.Add(user);

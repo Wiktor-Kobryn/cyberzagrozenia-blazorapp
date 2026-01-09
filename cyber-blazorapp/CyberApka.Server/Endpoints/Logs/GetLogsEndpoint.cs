@@ -15,7 +15,7 @@ public class GetLogsEndpoint(IMediator mediator) : EndpointWithoutRequest<CyberA
     public override void Configure()
     {
         Get("/api/admin/logs");
-        Roles("Admin");
+        Permissions("Logs.View");
     }
 
     public override async Task HandleAsync(CancellationToken ct)

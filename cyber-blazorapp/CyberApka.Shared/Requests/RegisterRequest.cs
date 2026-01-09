@@ -4,18 +4,18 @@ namespace CyberApka.Shared.Requests;
 
 public class RegisterRequest
 {
-    [Required(ErrorMessage = "Username is required.")]
+    [Required(ErrorMessage = "Nazwa użytkownika jest wymagana.")]
     public string Username { get; set; } = "";
 
-    [Required(ErrorMessage = "Email is required.")]
+    [Required(ErrorMessage = "Email jest wymagany.")]
     [EmailAddress(ErrorMessage = "Invalid email address format.")]
     public string Email { get; set; } = "";
 
-    [Required(ErrorMessage = "Password is required.")]
-    [MinLength(12, ErrorMessage = "Password must be at least 12 characters long.")]
+    [Required(ErrorMessage = "Hasło jest wymagane.")]
+    [MinLength(12, ErrorMessage = "Hasło musi mieć conajmniej 12 znaków.")]
     [RegularExpression(
         @"^(?=.*[A-Z])(?=.*[\W_]).+$",
-        ErrorMessage = "Password must contain at least one uppercase letter and one special character."
+        ErrorMessage = "Hasło musi zawierać conajmniej jedną dużą literę i jeden znak specjalny."
     )]
     public string Password { get; set; } = "";
 

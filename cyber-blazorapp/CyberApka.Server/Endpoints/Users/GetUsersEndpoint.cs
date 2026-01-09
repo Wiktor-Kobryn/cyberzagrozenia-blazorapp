@@ -14,7 +14,7 @@ public class GetUsersEndpoint(IMediator mediator) : EndpointWithoutRequest<Cyber
     public override void Configure()
     {
         Get("/api/admin/users");
-        Roles("Admin");
+        Permissions("Users.View");
     }
 
     public override async Task HandleAsync(CancellationToken ct)

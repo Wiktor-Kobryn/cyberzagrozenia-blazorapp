@@ -3,10 +3,10 @@ namespace CyberApka.Shared.Requests;
 
 public class LoginRequest
 {
-    [Required(ErrorMessage = "Email required.")]
-    [EmailAddress(ErrorMessage = "Invalid email address format.")]
+    [Required(ErrorMessage = "Email wymagany.")]
+    [EmailAddress(ErrorMessage = "Niepoprawny format adresu email.")]
     public string Email { get; set; } = string.Empty;
-    [Required(ErrorMessage = "Password required.")]
+    [Required(ErrorMessage = "Hasło wymagane.")]
     public string Password { get; set; } = string.Empty;
 
     public string? CaptchaToken { get; set; }

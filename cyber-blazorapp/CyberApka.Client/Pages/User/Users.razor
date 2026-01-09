@@ -5,14 +5,16 @@
 @using Microsoft.AspNetCore.Authorization
 @using MudBlazor
 @using CyberApka.Shared.Results
-@attribute [Authorize(Roles = "Admin")]
+@using CyberApka.Client.Components
+
+@attribute [Authorize]
 
 @inject HttpClient Http
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
-    <MudText Typo="Typo.h4" Class="mb-4">User Management</MudText>
+    <MudText Typo="Typo.h4" Class="mb-4">Zarządzanie Użytkownikami</MudText>
 
     @if (_isLoading)
     {
@@ -22,33 +24,48 @@
     {
         <MudTable Items="@_users" Hover="true" Striped="true" Elevation="10" Filter="new Func<UserDto, bool>(FilterFunc)">
             <ToolBarContent>
-                <MudText Typo="Typo.h6">Registered Users</MudText>
+                <MudText Typo="Typo.h6">Zarejestrowani Użytkownicy</MudText>
                 <MudSpacer />
-                <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                <MudTextField @bind-Value="_searchString" Placeholder="Szukaj..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
             </ToolBarContent>
             <HeaderContent>
                 <MudTh>ID</MudTh>
-                <MudTh>Username</MudTh>
+                <MudTh>Nazwa użytkownika</MudTh>
                 <MudTh>Email</MudTh>
-                <MudTh>Role</MudTh>
-                <MudTh Style="text-align:right">Actions</MudTh>
+                <MudTh>Rola</MudTh>
+                <MudTh Style="text-align:right">Akcje</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="ID">@context.Id</MudTd>
                 <MudTd DataLabel="Username">@context.Username</MudTd>
                 <MudTd DataLabel="Email">@context.Email</MudTd>
-                <MudTd DataLabel="Role">
+                <MudTd DataLabel="Rola">
                     <MudChip T="string" Size="Size.Small" Color="@(context.RoleName == "Admin" ? Color.Error : Color.Primary)">
                         @context.RoleName
                     </MudChip>
                 </MudTd>
                 <MudTd DataLabel="Actions" Style="text-align:right">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Info" OnClick="@(() => EditUser(context))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteUser(context))" />
+
+                    <PermissionView Required="Users.Update">
+                        <Authorized>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Info"
+                                           OnClick="@(() => EditUser(context))" />
+                        </Authorized>
+                    </PermissionView>
+
+                    <PermissionView Required="Users.Delete">
+                        <Authorized>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           OnClick="@(() => DeleteUser(context))" />
+                        </Authorized>
+                    </PermissionView>
+
                 </MudTd>
             </RowTemplate>
             <PagerContent>
-                <MudTablePager />
+                <MudTablePager RowsPerPageString="Wierszy na stronę:" />
             </PagerContent>
         </MudTable>
     }
@@ -79,12 +96,12 @@
             }
             else
             {
-                Snackbar.Add(response?.ErrorMessage ?? "Failed to load data", Severity.Error);
+                Snackbar.Add(response?.ErrorMessage ?? "Nie udało się pobrać danych", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Network error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Błąd sieci: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -106,7 +123,7 @@
             ["AvailableRoles"] = _roles
         };
 
-        var dialog = await DialogService.ShowAsync<UserDialog>("Edit User", parameters);
+        var dialog = await DialogService.ShowAsync<UserDialog>("Edycja Użytkownika", parameters);
         var result = await dialog.Result;
 
         if (result != null && !result.Canceled)
@@ -118,12 +135,12 @@
 
                 if (apiResult != null && apiResult.IsSuccess)
                 {
-                    Snackbar.Add("User updated!", Severity.Success);
+                    Snackbar.Add("Zaktualizowano użytkownika!", Severity.Success);
                     await LoadData();
                 }
                 else
                 {
-                    Snackbar.Add(apiResult?.ErrorMessage ?? "Update failed", Severity.Error);
+                    Snackbar.Add(apiResult?.ErrorMessage ?? "Aktualizacja nie powiodła się", Severity.Error);
                 }
             }
         }
@@ -132,9 +149,9 @@
     private async Task DeleteUser(UserDto user)
     {
         bool? confirm = await DialogService.ShowMessageBox(
-           "Warning",
-           $"Are you sure you want to delete {user.Username}?",
-           yesText: "Delete!", cancelText: "Cancel");
+            "Ostrzeżenie",
+            $"Czy na pewno chcesz usunąć użytkownika {user.Username}?",
+            yesText: "Usuń", cancelText: "Anuluj");
 
         if (confirm == true)
         {
@@ -142,8 +159,13 @@
             var result = await response.Content.ReadFromJsonAsync<CyberApkaResult<string>>();
             if (result != null && result.IsSuccess)
             {
+                Snackbar.Add("Użytkownik usunięty", Severity.Success);
                 _users.Remove(user);
                 StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Add(result?.ErrorMessage ?? "Usuwanie nie powiodło się", Severity.Error);
             }
         }
     }

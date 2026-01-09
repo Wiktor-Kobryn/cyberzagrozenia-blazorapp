@@ -12,7 +12,7 @@ public class UpdateUserEndpoint(IMediator mediator) : Endpoint<UpdateUserRequest
     public override void Configure()
     {
         Put("/api/admin/users");
-        Roles("Admin");
+        Permissions("Users.Update");
     }
     public override async Task HandleAsync(UpdateUserRequest req, CancellationToken ct)
     {

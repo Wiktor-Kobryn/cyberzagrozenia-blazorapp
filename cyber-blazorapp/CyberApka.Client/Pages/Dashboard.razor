@@ -1,38 +1,126 @@
 ﻿@page "/dashboard"
 @using Microsoft.AspNetCore.Authorization
 @using MudBlazor
-@inject NavigationManager NavigationManager
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using CyberApka.Client.Components
 
 @attribute [Authorize]
 
-<MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
-    <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center w-100">
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
 
-        <div class="d-flex justify-end w-100 mb-2">
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@Logout">
-                Sign Out
-            </MudButton>
-        </div>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
 
-        <div class="d-flex flex-column justify-center align-center w-100">
-            <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Primary" Style="font-size:200px;" />
-            <MudText Typo="Typo.h5" Class="mb-3">
-                SIGNED IN
-                <MudIcon Icon="@Icons.Material.Filled.DoneOutline" Class="mb-2"></MudIcon>
-            </MudText>
-            <MudText>Username</MudText>
-        </div>
+    <div class="d-flex flex-column align-center mb-10">
+        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Color="Color.Primary" Style="font-size: 64px;" Class="mb-4" />
+        <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">Panel Główny</MudText>
+        <MudText Typo="Typo.h6" Color="Color.Secondary">
+            Witaj, <b>@_username</b>!
+        </MudText>
+    </div>
 
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" onclick="@RedirectLogs">Incident Logs</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" onclick="@RedirectUsers">Manage Users</MudButton>
-    </MudContainer>
-</MudPaper>
+    <MudDivider Class="my-6" />
+
+    <MudText Typo="Typo.h5" Class="mb-4" Color="Color.Primary">
+        <MudIcon Icon="@Icons.Material.Filled.Apps" Class="mr-2" /> Moduły
+    </MudText>
+
+    <MudGrid>
+
+        <PermissionView Required="Users.View">
+            <Authorized>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="4" Class="d-flex flex-column align-center justify-center py-8 px-4 cursor-pointer hover-card"
+                             @onclick="@(() => NavigateTo("/users"))">
+                        <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Color="Color.Success" Style="font-size: 48px;" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Użytkownicy</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-muted">
+                            Przeglądaj listę użytkowników.
+                        </MudText>
+                    </MudCard>
+                </MudItem>
+            </Authorized>
+            <NotAuthorized>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2" Class="d-flex flex-column align-center justify-center py-8 px-4"
+                             Style="background-color: #f5f5f5; opacity: 0.7; cursor: not-allowed;">
+                        <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Default" Style="font-size: 48px;" Class="mb-3" />
+                        <MudText Typo="Typo.h6" Color="Color.Default">Użytkownicy</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-muted">
+                            Brak dostępu do tego modułu.
+                        </MudText>
+                    </MudCard>
+                </MudItem>
+            </NotAuthorized>
+        </PermissionView>
 
 
+        <PermissionView Required="Logs.View">
+            <Authorized>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="4" Class="d-flex flex-column align-center justify-center py-8 px-4 cursor-pointer hover-card"
+                             @onclick="@(() => NavigateTo("/logs"))">
+                        <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Info" Style="font-size: 48px;" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Logi</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-muted">
+                            Historia zdarzeń systemowych.
+                        </MudText>
+                    </MudCard>
+                </MudItem>
+            </Authorized>
+        </PermissionView>
+
+        <PermissionView Required="Roles.View">
+            <Authorized>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="4" Class="d-flex flex-column align-center justify-center py-8 px-4 cursor-pointer hover-card"
+                             @onclick="@(() => NavigateTo("/roles"))">
+                        <MudIcon Icon="@Icons.Material.Filled.PermIdentity" Color="Color.Info" Style="font-size: 48px;" Class="mb-3" />
+                        <MudText Typo="Typo.h6">Role</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2 text-muted">
+                            Role i uprawnienia.
+                        </MudText>
+                    </MudCard>
+                </MudItem>
+            </Authorized>
+        </PermissionView>
+    </MudGrid>
+
+</MudContainer>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important;
+            background-color: var(--mud-palette-background-grey);
+        }
+
+    .text-muted {
+        color: var(--mud-palette-text-secondary);
+    }
+</style>
 
 @code {
-    private void Logout() { NavigationManager.NavigateTo("/"); }            // logika wylogowywania - brak
+    private string _username = "Użytkownik";
 
-    private void RedirectLogs() { NavigationManager.NavigateTo("/logs"); }  // warunek wyświetlania - rola admin
-    private void RedirectUsers() { NavigationManager.NavigateTo("/users"); }
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            _username = user.Identity.Name ?? "Użytkownik";
+        }
+    }
+
+    private void NavigateTo(string url)
+    {
+        NavigationManager.NavigateTo(url);
+    }
 }

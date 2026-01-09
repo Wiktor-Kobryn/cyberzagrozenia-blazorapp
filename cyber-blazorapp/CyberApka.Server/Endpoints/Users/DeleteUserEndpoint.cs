@@ -11,7 +11,7 @@ public class DeleteUserEndpoint(IMediator mediator) : EndpointWithoutRequest<Cyb
     public override void Configure()
     {
         Delete("/api/admin/users/{id}");
-        Roles("Admin");
+        Permissions("Users.Delete");
     }
     public override async Task HandleAsync(CancellationToken ct)
     {

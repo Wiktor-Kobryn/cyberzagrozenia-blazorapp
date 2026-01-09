@@ -25,7 +25,6 @@
   <ItemGroup>
     <Folder Include="Data\Database\Migrations\" />
     <Folder Include="Features\Auth\Queries\" />
-    <Folder Include="Features\Roles\Queries\" />
   </ItemGroup>
 
   <ItemGroup>

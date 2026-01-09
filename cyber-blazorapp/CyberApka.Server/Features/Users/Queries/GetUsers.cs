@@ -34,7 +34,12 @@ public abstract class GetUsers
 
                 var roles = await _context.Roles
                     .AsNoTracking()
-                    .Select(r => new RoleDto(r.Id, r.Name))
+                    .Select(r => new RoleDto
+                    {
+                        Id = r.Id,
+                        Description = r.Description,
+                        Name = r.Name
+                    })
                     .ToListAsync(ct);
 
                 var responseData = new GetUsersResponse

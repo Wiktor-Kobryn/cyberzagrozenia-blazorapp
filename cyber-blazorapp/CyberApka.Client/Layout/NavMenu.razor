@@ -1,10 +1,54 @@
-﻿@using MudBlazor
+﻿@using CyberApka.Client.Components
+@using MudBlazor
 
-<MudDrawer Elevation="1" Variant="DrawerVariant.Mini" Color="Color.Primary">
-    <MudNavMenu>
-        <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home">Strona główna</MudNavLink>
-        <MudNavLink Href="/register" Icon="@Icons.Material.Filled.PersonAdd">Rejestracja</MudNavLink>
-        <MudNavLink Href="/login" Icon="@Icons.Material.Filled.Login">Logowanie</MudNavLink>
-        <MudNavLink Href="/settings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">Ustawienia</MudNavLink>
+<MudDrawer Open="true"
+           Elevation="2"
+           ClipMode="DrawerClipMode.Always"
+           Variant="@DrawerVariant.Responsive"
+           Color="Color.Surface"
+           Width="260px">
+
+    <MudDrawerHeader Class="d-flex align-center justify-center pa-4">
+        <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Primary" Size="Size.Large" Class="mr-3" />
+        <MudText Typo="Typo.h5" Color="Color.Primary" Style="font-weight:bold;">CyberApka</MudText>
+    </MudDrawerHeader>
+
+    <MudNavMenu Bordered="true" Color="Color.Primary" Margin="Margin.Dense" Class="pa-2">
+
+        <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" IconSize="Size.Large" Class="my-1 rounded">
+            Panel Główny
+        </MudNavLink>
+
+        <MudDivider Class="my-2" />
+
+        <MudText Typo="Typo.overline" Class="px-4 mt-2" Color="Color.Secondary">Zarządzanie</MudText>
+
+        <PermissionView Required="Users.View">
+            <Authorized>
+                <MudNavLink Href="/users" Icon="@Icons.Material.Filled.PeopleAlt" IconSize="Size.Large" Class="my-1 rounded">
+                    Użytkownicy
+                </MudNavLink>
+            </Authorized>
+        </PermissionView>
+
+        <PermissionView Required="Logs.View">
+            <Authorized>
+                <MudNavLink Href="/logs" Icon="@Icons.Material.Filled.ReceiptLong" IconSize="Size.Large" Class="my-1 rounded">
+                    Logi Systemowe
+                </MudNavLink>
+            </Authorized>
+        </PermissionView>
+
+        <PermissionView Required="Roles.View">
+            <Authorized>
+                <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.AdminPanelSettings" IconSize="Size.Large" Class="my-1 rounded">
+                    Role i Uprawnienia
+                </MudNavLink>
+            </Authorized>
+        </PermissionView>
+
     </MudNavMenu>
 </MudDrawer>
+
+@code {
+}

@@ -69,7 +69,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowWasm");
-app.UseFastEndpoints();
+app.UseFastEndpoints(c =>
+{
+    c.Security.PermissionsClaimType = "permission";
+});
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,0 +1,147 @@
+﻿@page "/register"
+@inject AuthService AuthService
+@inject ISnackbar Snackbar
+@using CyberApka.Client.Services
+@using CyberApka.Shared.Requests
+@using MudBlazor
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
+    <div class="d-flex flex-column align-end w-100 mb-4">
+        <MudText Typo="Typo.caption" Class="mb-1">Masz już konto?</MudText>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Secondary"
+                   Size="Size.Small"
+                   OnClick="@RedirectLogin">
+            Zaloguj się
+        </MudButton>
+    </div>
+
+    <div>
+        <div class="d-flex justify-center align-center mb-6">
+            <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Color="Color.Primary" Class="mr-2" />
+            <MudText Typo="Typo.h5">Rejestracja</MudText>
+        </div>
+
+        <EditForm Model="@_request" OnValidSubmit="RegisterUser">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <MudTextField @bind-Value="_request.Username"
+                          Label="Nazwa użytkownika"
+                          Required="true"
+                          Variant="Variant.Outlined"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Person"
+                          Class="mb-3" />
+
+            <MudTextField @bind-Value="_request.Email"
+                          Label="Email"
+                          Required="true"
+                          InputType="InputType.Email"
+                          Variant="Variant.Outlined"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Email"
+                          Class="mb-3" />
+
+            <MudTextField @bind-Value="_request.Password"
+                          Label="Hasło"
+                          InputType="InputType.Password"
+                          Required="true"
+                          Variant="Variant.Outlined"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Lock"
+                          Class="mb-3" />
+
+            <MudTextField @bind-Value="repeatedPassword"
+                          Label="Powtórz hasło"
+                          InputType="InputType.Password"
+                          Required="true"
+                          Variant="Variant.Outlined"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.LockReset" />
+
+            <MudContainer Class="px-0 mt-4">
+                <div id="register-recaptcha-container" @key="@("recaptcha-div")"></div>
+            </MudContainer>
+
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-6 py-2"
+                       FullWidth="true"
+                       Size="Size.Large">
+                Zarejestruj się
+                <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Medium" Color="Color.Inherit" Class="ml-2" />
+            </MudButton>
+        </EditForm>
+    </div>
+</MudPaper>
+
+@code {
+    private RegisterRequest _request = new();
+    private string repeatedPassword = "";
+    private const string SiteKey = "6Lcwpg0sAAAAABpF5jSbZZGWJO4KMo0HDMSBMcuf";
+
+    private void RedirectLogin() { NavigationManager.NavigateTo("/login"); }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(500);
+            try
+            {
+                await JS.InvokeVoidAsync("renderRecaptcha", "register-recaptcha-container", SiteKey);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Recaptcha render error: " + ex.Message);
+            }
+        }
+    }
+
+    private bool CheckPasswordIntegrity()
+    {
+        if (_request.Password != repeatedPassword)
+        {
+            Snackbar.Add("Hasła nie są identyczne", Severity.Error);
+            _request.Password = "";
+            repeatedPassword = "";
+            return false;
+        }
+        return true;
+    }
+
+    private async Task RegisterUser()
+    {
+        if (!CheckPasswordIntegrity()) return;
+        try
+        {
+            _request.CaptchaToken = await JS.InvokeAsync<string>("getRecaptchaResponse");
+        }
+        catch
+        {
+            _request.CaptchaToken = await JS.InvokeAsync<string>("grecaptcha.getResponse");
+        }
+
+        if (string.IsNullOrEmpty(_request.CaptchaToken))
+        {
+            Snackbar.Add("Potwierdź, że nie jesteś robotem", Severity.Error);
+            return;
+        }
+
+        var result = await AuthService.RegisterAsync(_request);
+
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Pomyślnie zarejestrowano", Severity.Success);
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            Snackbar.Add(result.ErrorMessage ?? "Niezanny błąd", Severity.Error);
+        }
+    }
+}

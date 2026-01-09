@@ -50,7 +50,7 @@ public class LogoutEndpoint(CyberDbContext context, LogService logService) : End
                 await _logService.AddLogAsync("Logout - Invalid Claim Format", userIdString ?? "null", null, ct);
             }
 
-            await Send.OkAsync(CyberApkaResult<string>.Success("Logged out successfully"), ct);
+            await Send.OkAsync(CyberApkaResult<string>.Success("Pomyślnie wylogowano"), ct);
         }
         catch (Exception ex)
         {

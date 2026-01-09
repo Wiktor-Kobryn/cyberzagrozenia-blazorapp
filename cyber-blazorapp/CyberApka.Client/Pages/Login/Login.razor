@@ -12,42 +12,65 @@
 @inject AuthenticationStateProvider AuthStateProvider
 
 <MudPaper Class="mx-auto mt-12 pa-6" MaxWidth="400px" Elevation="10">
-    <div class="d-flex flex-column align-end w-100 mb-2">
-        <MudText class="mb-1">Don't have an account?</MudText>
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@RedirectRegister">Sign Up</MudButton>
+    <div class="d-flex flex-column align-end w-100 mb-4">
+        <MudText Typo="Typo.caption" Class="mb-1">Nie masz jeszcze konta?</MudText>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Secondary"
+                   Size="Size.Small"
+                   OnClick="@RedirectRegister">
+            Zarejestruj się
+        </MudButton>
     </div>
 
     <div>
-        <MudText Typo="Typo.h5" Class="mb-4">
-            <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" Color="Color.Primary" Class="mb-1" /> Sign In
-        </MudText>
+        <div class="d-flex justify-center align-center mb-6">
+            <MudIcon Icon="@Icons.Material.Filled.Login" Size="Size.Large" Color="Color.Primary" Class="mr-2" />
+            <MudText Typo="Typo.h5">Logowanie</MudText>
+        </div>
 
         <EditForm Model="@_request" OnValidSubmit="ValidateUser">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <MudTextField @bind-Value="_request.Email" Label="Email" Required="true" />
-            <MudTextField @bind-Value="_request.Password" Label="Password" InputType="InputType.Password" Required="true" />
+            <MudTextField @bind-Value="_request.Email"
+                          Label="Email"
+                          Required="true"
+                          Variant="Variant.Outlined"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Email"
+                          Class="mb-3" />
 
-            <MudContainer Style="margin-top: 20px;">
+            <MudTextField @bind-Value="_request.Password"
+                          Label="Hasło"
+                          InputType="InputType.Password"
+                          Required="true"
+                          Variant="Variant.Outlined"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Lock" />
+
+            <MudContainer Class="px-0 mt-4">
                 <div id="login-recaptcha-container" @key="@("login-recaptcha")"></div>
             </MudContainer>
 
-            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">Login <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Large" Color="Color.Primary" Class="mb-1" /></MudButton>
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-6 py-2"
+                       FullWidth="true"
+                       Size="Size.Large">
+                Zaloguj się
+                <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Medium" Color="Color.Inherit" Class="ml-2" />
+            </MudButton>
 
             @if (_message is not null)
             {
-                <MudText Class="mt-3" Color="@(_isError? Color.Error: Color.Success)">@_message</MudText>
+                <MudAlert Severity="@(_isError? Severity.Error: Severity.Success)" Class="mt-3" Dense="true">
+                    @_message
+                </MudAlert>
             }
         </EditForm>
     </div>
-
-    <div class="d-flex flex-column align-start w-100 mb-2 mt-4">
-        <MudText class="mb-1">Forgot your password?</MudText>
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@RedirectRecover">Recover account</MudButton>
-    </div>
 </MudPaper>
-
 
 @code {
     private LoginRequest _request = new();
@@ -98,7 +121,7 @@
 
         if (string.IsNullOrEmpty(_request.CaptchaToken))
         {
-            Snackbar.Add("Please complete the captcha", Severity.Error);
+            Snackbar.Add("Poteiwrdź, że nie jesteś robotem", Severity.Error);
             return;
         }
 
@@ -106,7 +129,7 @@
 
         if (result.IsSuccess)
         {
-            Snackbar.Add("Successfully logged", Severity.Success);
+            Snackbar.Add("Pomyślnie zalogowano", Severity.Success);
             NavigationManager.NavigateTo("/dashboard");
         }
         else

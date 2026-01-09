@@ -12,7 +12,7 @@ public class SyncPermissionsEndpoint(IMediator mediator) : EndpointWithoutReques
     public override void Configure()
     {
         Post("/api/admin/sync-permissions");
-        Roles("Admin");
+        Permissions("Roles.View");
     }
 
     public override async Task HandleAsync(CancellationToken ct)

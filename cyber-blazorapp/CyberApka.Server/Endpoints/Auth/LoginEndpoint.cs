@@ -31,7 +31,7 @@ public class LoginEndpoint(IMediator mediator, IMemoryCache cache) : Endpoint<Lo
         if (_cache.TryGetValue<int>(key, out var attempts) && attempts >= MaxAttempts)
         {
             await HttpContext.Response.SendAsync(
-                CyberApkaResult<LoginResponse>.Failure($"Too many failed attempts. IP locked for {LockoutTime.TotalMinutes} minutes."),
+                CyberApkaResult<LoginResponse>.Failure($"Zbyt dużo prób logowania. IP zablokowane na {LockoutTime.TotalMinutes} min."),
                 429
             );
             return;

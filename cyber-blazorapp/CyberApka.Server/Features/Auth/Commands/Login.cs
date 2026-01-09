@@ -39,11 +39,10 @@ public abstract class Login
                 if (!captchaValid)
                 {
                     await _logService.AddLogAsync("Login - Captcha validation failed", request.Email ,null);
-                    return CyberApkaResult<LoginResponse>.Failure("Captcha validation failed.");
+                    return CyberApkaResult<LoginResponse>.Failure("Błąd walidacji captcha.");
                 }
 
                 var user = await _context.Users
-                    .AsNoTracking()
                     .Include(u => u.Role)
                         .ThenInclude(u => u.Permissions)
                     .FirstOrDefaultAsync(u => u.Email == request.Email, ct);
@@ -51,7 +50,7 @@ public abstract class Login
                 if (user == null)
                 {
                     await _logService.AddLogAsync("Login - Incorrect email or password", request.Email, null);
-                    return CyberApkaResult<LoginResponse>.Failure("Incorrect email or password.");
+                    return CyberApkaResult<LoginResponse>.Failure("Niepoprawny email lub hasło");
                 }
 
                 var argon = new Argon2id(Encoding.UTF8.GetBytes(request.Password))

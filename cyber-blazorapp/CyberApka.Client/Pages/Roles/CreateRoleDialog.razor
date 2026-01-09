@@ -1,0 +1,21 @@
+﻿@using CyberApka.Shared.Requests
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Model.Name" Label="Nazwa Roli" Required="true" />
+        <MudTextField @bind-Value="Model.Description" Label="Opis" Lines="3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Utwórz</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public CreateRoleRequest Model { get; set; } = new();
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(Model));
+    void Cancel() => MudDialog.Cancel();
+}

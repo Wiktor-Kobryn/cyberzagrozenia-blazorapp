@@ -1,0 +1,203 @@
+﻿@page "/roles"
+@using CyberApka.Shared.DTOs
+@using CyberApka.Shared.Requests
+@using CyberApka.Shared.Results
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@attribute [Authorize(Roles = "Admin")]
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-4">Zarządzanie Rolami</MudText>
+
+    <div class="d-flex gap-4 mb-4">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Success"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="CreateRole">
+            Nowa Rola
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Warning"
+                   StartIcon="@Icons.Material.Filled.Sync"
+                   OnClick="SyncPermissions"
+                   Disabled="@_isSyncing">
+            @if (_isSyncing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Skanowanie...</MudText>
+            }
+            else
+            {
+                <MudText>Synchronizuj Uprawnienia</MudText>
+            }
+        </MudButton>
+    </div>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+    }
+    else
+    {
+        <MudTable Items="@_roles" Hover="true" Striped="true" Elevation="10">
+            <HeaderContent>
+                <MudTh>ID</MudTh>
+                <MudTh>Nazwa</MudTh>
+                <MudTh>Opis</MudTh>
+                <MudTh>Liczba Uprawnień</MudTh>
+                <MudTh Style="text-align:right">Akcje</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ID">@context.Id</MudTd>
+                <MudTd DataLabel="Nazwa"><b>@context.Name</b></MudTd>
+                <MudTd DataLabel="Opis">@context.Description</MudTd>
+                <MudTd DataLabel="Uprawnienia">
+                    <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.Permissions.Count</MudChip>
+                </MudTd>
+                <MudTd DataLabel="Akcje" Style="text-align:right">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Security"
+                               OnClick="@(() => ManagePermissions(context))">
+                        Zarządzaj Uprawnieniami
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    private List<RoleDto> _roles = new();
+    private List<PermissionDto> _allPermissions = new();
+    private bool _isLoading = true;
+    private bool _isSyncing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        await LoadAllPermissions();
+    }
+
+    private async Task SyncPermissions()
+    {
+        _isSyncing = true;
+        try
+        {
+            var response = await Http.PostAsync("/api/admin/sync-permissions", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<CyberApkaResult<string>>();
+                if (result != null && result.IsSuccess)
+                {
+                    Snackbar.Add(result.Data, Severity.Success);
+
+                    await LoadAllPermissions();
+                    await LoadData();
+                }
+                else
+                {
+                    Snackbar.Add(result?.ErrorMessage ?? "Błąd synchronizacji", Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add($"Błąd HTTP: {response.StatusCode}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Błąd połączenia: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSyncing = false;
+        }
+    }
+
+    private async Task LoadData()
+    {
+        _isLoading = true;
+        var result = await Http.GetFromJsonAsync<CyberApkaResult<List<RoleDto>>>("api/admin/roles");
+        if (result != null && result.IsSuccess)
+        {
+            _roles = result.Data;
+        }
+        _isLoading = false;
+    }
+
+    private async Task LoadAllPermissions()
+    {
+        var result = await Http.GetFromJsonAsync<CyberApkaResult<List<PermissionDto>>>("api/admin/permissions");
+        if (result != null && result.IsSuccess)
+        {
+            _allPermissions = result.Data;
+        }
+    }
+
+    private async Task CreateRole()
+    {
+        var dialog = await DialogService.ShowAsync<CreateRoleDialog>("Dodaj Nową Rolę");
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            var req = (CreateRoleRequest)result.Data;
+            var response = await Http.PostAsJsonAsync("api/admin/roles", req);
+            var apiResult = await response.Content.ReadFromJsonAsync<CyberApkaResult<string>>();
+
+            if (apiResult != null && apiResult.IsSuccess)
+            {
+                Snackbar.Add("Rola dodana pomyślnie!", Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add(apiResult?.ErrorMessage ?? "Błąd", Severity.Error);
+            }
+        }
+    }
+
+    private async Task ManagePermissions(RoleDto role)
+    {
+        var parameters = new DialogParameters
+        {
+            ["RoleName"] = role.Name,
+            ["AllPermissions"] = _allPermissions,
+            ["SelectedPermissionIds"] = role.Permissions.Select(p => p.Id).ToList()
+        };
+
+        var dialog = await DialogService.ShowAsync<ManagePermissionsDialog>("Edycja Uprawnień", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            var selectedIds = (List<int>)result.Data;
+            var updateReq = new UpdateRolePermissionsRequest
+            {
+                RoleId = role.Id,
+                PermissionIds = selectedIds
+            };
+
+            var response = await Http.PutAsJsonAsync("api/admin/roles/permissions", updateReq);
+            var apiResult = await response.Content.ReadFromJsonAsync<CyberApkaResult<string>>();
+
+            if (apiResult != null && apiResult.IsSuccess)
+            {
+                Snackbar.Add("Uprawnienia zaktualizowane!", Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add(apiResult?.ErrorMessage ?? "Błąd aktualizacji", Severity.Error);
+            }
+        }
+    }
+}

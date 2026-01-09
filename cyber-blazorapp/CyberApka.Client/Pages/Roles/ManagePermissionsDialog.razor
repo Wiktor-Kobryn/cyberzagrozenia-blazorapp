@@ -1,0 +1,62 @@
+﻿@using CyberApka.Shared.DTOs
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Class="mb-4">Zaznacz uprawnienia dla roli: <b>@RoleName</b></MudText>
+
+        @if (AllPermissions == null)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            <MudGrid Class="mt-2" Style="max-height: 400px; overflow-y: auto;">
+                @foreach (var perm in AllPermissions)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudCheckBox T="bool"
+                                     Value="@IsSelected(perm.Id)"
+                                     ValueChanged="@((bool val) => TogglePermission(perm.Id, val))"
+                                     Label="@perm.Name"
+                                     Color="Color.Primary"
+                                     Dense="true" />
+                        <MudText Typo="Typo.caption" Class="ml-8 d-block" Color="Color.Secondary">@perm.Description</MudText>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Anuluj</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Zapisz zmiany</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public string RoleName { get; set; } = "";
+    [Parameter] public List<PermissionDto> AllPermissions { get; set; } = new();
+
+    [Parameter] public List<int> SelectedPermissionIds { get; set; } = new();
+
+    private bool IsSelected(int permId) => SelectedPermissionIds.Contains(permId);
+
+    private void TogglePermission(int permId, bool isChecked)
+    {
+        if (isChecked)
+        {
+            if (!SelectedPermissionIds.Contains(permId))
+                SelectedPermissionIds.Add(permId);
+        }
+        else
+        {
+            if (SelectedPermissionIds.Contains(permId))
+                SelectedPermissionIds.Remove(permId);
+        }
+    }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(SelectedPermissionIds));
+    void Cancel() => MudDialog.Cancel();
+}
