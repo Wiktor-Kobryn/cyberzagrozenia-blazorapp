@@ -10,7 +10,6 @@ namespace CyberApka.Server.Services;
 public class TokenService(IConfiguration config)
 {
     private readonly IConfiguration _config = config;
-
     public string GenerateAccessToken(User user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
@@ -44,7 +43,6 @@ public class TokenService(IConfiguration config)
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
     public string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];

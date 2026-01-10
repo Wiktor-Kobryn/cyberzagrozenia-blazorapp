@@ -66,7 +66,7 @@ public abstract class Login
                 if (CryptographicOperations.FixedTimeEquals(computedHash, user.Hash) == false)
                 {
                     await _logService.AddLogAsync("Login - Incorrect email or password", request.Email, null);
-                    return CyberApkaResult<LoginResponse>.Failure("Incorrect email or password");
+                    return CyberApkaResult<LoginResponse>.Failure("Niepoprawny email lub hasło");
                 }
 
                 var accessToken = _tokenService.GenerateAccessToken(user);

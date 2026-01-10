@@ -142,6 +142,7 @@
         else
         {
             Snackbar.Add(result.ErrorMessage ?? "Niezanny błąd", Severity.Error);
+            await JS.InvokeVoidAsync("resetRecaptcha");
         }
     }
 }

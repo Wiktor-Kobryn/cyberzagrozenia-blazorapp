@@ -51,4 +51,11 @@
     function getRecaptchaResponse() {
         return grecaptcha.getResponse();
     }
+
+    function resetRecaptcha() {
+        if (window.grecaptcha && window.grecaptcha.reset) {
+            window.grecaptcha.reset();
+        }
+    }
+
 </script>

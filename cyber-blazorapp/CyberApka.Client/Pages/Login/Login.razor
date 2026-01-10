@@ -116,12 +116,16 @@
         }
         catch
         {
-            _request.CaptchaToken = await JS.InvokeAsync<string>("grecaptcha.getResponse");
+            try
+            {
+                _request.CaptchaToken = await JS.InvokeAsync<string>("grecaptcha.getResponse");
+            }
+            catch { }
         }
 
         if (string.IsNullOrEmpty(_request.CaptchaToken))
         {
-            Snackbar.Add("Poteiwrdź, że nie jesteś robotem", Severity.Error);
+            Snackbar.Add("Potwierdź, że nie jesteś robotem", Severity.Error);
             return;
         }
 
@@ -134,7 +138,11 @@
         }
         else
         {
-            Snackbar.Add(result.ErrorMessage ?? "Unknown error", Severity.Error);
+            _isError = true;
+            _message = result.ErrorMessage ?? "Wystąpił nieznany błąd";
+            Snackbar.Add(_message, Severity.Error);
+
+            await JS.InvokeVoidAsync("resetRecaptcha");
         }
     }
 }
