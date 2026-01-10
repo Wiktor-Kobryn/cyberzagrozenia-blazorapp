@@ -45,7 +45,7 @@ public abstract class Login
                 var user = await _context.Users
                     .Include(u => u.Role)
                         .ThenInclude(u => u.Permissions)
-                    .FirstOrDefaultAsync(u => u.Email == request.Email, ct);
+                    .FirstOrDefaultAsync(u => u.Email == request.Email && !u.IsDeleted, ct);
 
                 if (user == null)
                 {
@@ -73,7 +73,7 @@ public abstract class Login
                 var refreshToken = _tokenService.GenerateRefreshToken();
 
                 user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1);
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(2);
 
                 await _context.SaveChangesAsync(ct);
 

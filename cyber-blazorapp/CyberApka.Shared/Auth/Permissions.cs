@@ -16,3 +16,5 @@
     public const string RolesView = "Roles.View";
     public const string RolesManage = "Roles.Manage";
 }
+
+

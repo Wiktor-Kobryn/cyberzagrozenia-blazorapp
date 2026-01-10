@@ -8,6 +8,7 @@ public class User : BaseEntity
     public byte[] Salt { get; set; } = Array.Empty<byte>();
     public int RoleId { get; set; }
     public Role Role { get; set; }
+    public bool IsDeleted { get; set; } = false;
 
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }

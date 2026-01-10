@@ -21,12 +21,13 @@ public abstract class DeleteUser
                 var user = await _context.Users.FindAsync([request.UserId], ct);
                 if (user == null) return CyberApkaResult<string>.Failure("User not found");
 
-                _context.Users.Remove(user);
+                user.IsDeleted = true;
+
                 await _context.SaveChangesAsync(ct);
 
-                await _logService.AddLogAsync("User Deleted", $"Deleted user email: {user.Email}", null, ct);
+                await _logService.AddLogAsync("User Deleted (Soft)", $"User {user.Id} deactivated", null, ct);
 
-                return CyberApkaResult<string>.Success("User deleted");
+                return CyberApkaResult<string>.Success("User deleted successfully");
             }
             catch (Exception ex)
             {

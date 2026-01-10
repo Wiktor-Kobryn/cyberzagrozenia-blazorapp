@@ -12,8 +12,15 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddTransient<RefreshTokenHandler>();
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7226") });
+builder.Services.AddHttpClient("CyberApka.ServerAPI", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7226");
+})
+    .AddHttpMessageHandler<RefreshTokenHandler>();
+
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("CyberApka.ServerAPI"));
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<CustomAuthStateProvider>(provider =>

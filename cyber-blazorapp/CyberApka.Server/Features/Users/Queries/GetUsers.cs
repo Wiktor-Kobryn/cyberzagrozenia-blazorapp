@@ -21,6 +21,7 @@ public abstract class GetUsers
             {
                 var users = await _context.Users
                     .AsNoTracking()
+                    .Where(u => !u.IsDeleted)
                     .Include(u => u.Role)
                     .Select(u => new UserDto
                     {

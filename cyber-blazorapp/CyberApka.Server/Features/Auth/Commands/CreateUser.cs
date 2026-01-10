@@ -64,7 +64,7 @@ public abstract class CreateUser
                     Email = request.Email,
                     Salt = salt,
                     Hash = hash,
-                    RoleId = 2
+                    RoleId = 3
                 };
 
                 _context.Users.Add(user);
